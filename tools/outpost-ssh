@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# outpost-ssh
+
+conf="$HOME/.outpost/outpost.json"
+
+droplet_ip=$(jq '.ip' $conf | tr -d '"')
+ssh -p2266 op@$droplet_ip

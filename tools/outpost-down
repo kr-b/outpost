@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# outpost-down
+
+
+conf="$HOME/.outpost/outpost.json"
+
+# Power down droplet
+droplet_id=$(jq '.id' $conf | tr -d '"')
+droplet_name=$(jq '.name' $conf | tr -d '"')
+
+echo "[-] Shutting down $droplet_name..."
+doctl compute droplet-action shutdown "$droplet_id" --wait
+
+# Create snapshot from droplet
+echo "[-] Creating snapshot image outpost-snapshot..."
+doctl compute droplet-action snapshot "$droplet_id" --snapshot-name "outpost-snapshot" --wait
+
+# Delete droplet
+read -p "[-] Press enter to continue to delete droplet"
+echo "[-] Deleting droplet $droplet_name..."
+doctl compute droplet delete "$droplet_name"

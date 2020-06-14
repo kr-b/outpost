@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# outpost-up
+
+for argv in "$@"
+do
+    if [ "$argv" == "-c" ]
+    then
+        connect_to_outpost=true
+    fi
+done
+
+conf="$HOME/.outpost/outpost.json"
+
+# Create droplet from snapshot
+droplet_name="outpost-$((10 + RANDOM % 20))"
+droplet_size=$(jq '.size' $conf)
+droplet_region=$(jq '.region' $conf)
+image_id=$(doctl compute image list | grep "outpost-snapshot" | tail -n 1 | awk '{ print $1 }')
+
+echo "[+] Activating $droplet_name..."
+echo -e "[i] doctl compute droplet create \"$droplet_name\" --image \"$image_id\" --region \"fra1\" --size s-1vcpu-1gb"
+resp=$(doctl compute droplet create "$droplet_name" --image "$image_id" --region "fra1" --size s-1vcpu-1gb --wait)
+
+secs=$((60))
+while [ $secs -gt 30 ]; do
+   echo -ne "[-] T-Minus $secs to deployment\033[0K\r"
+   sleep 1
+   : $((secs--))
+done
+
+droplet_ip="$(doctl compute droplet list | grep "$droplet_name" | tail -1 | awk '{ print $3 }')"
+droplet_id="$(doctl compute droplet list | grep "$droplet_name" | tail -1 | awk '{ print $1 }')"
+
+# Delete snapshot
+read -p "[-] Press enter to continue to remove snapshot"
+doctl compute snapshot delete "$image_id"
+
+# Update config file
+new_conf=$(cat $conf)
+new_conf=$(echo -n $new_conf | jq --arg var $droplet_name '.name = $var')
+new_conf=$(echo -n $new_conf | jq --arg var $droplet_ip '.ip = $var')
+new_conf=$(echo -n $new_conf | jq --arg var $droplet_id '.id = $var')
+echo -n $new_conf > $conf
+
+# Connect to droplet if selected
+if [ "$connect_to_outpost" ]
+then
+    outpost-ssh
+fi
