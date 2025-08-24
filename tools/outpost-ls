@@ -1,5 +1,0 @@
-#!/bin/bash
-
-# outpost-ls
-
-doctl compute droplet list
