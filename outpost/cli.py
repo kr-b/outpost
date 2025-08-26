@@ -2,7 +2,6 @@
 import click
 from . import do_api
 
-
 @click.group()
 def cli():
     """Outpost - manage DigitalOcean droplets as remote hacking bases."""
@@ -11,7 +10,7 @@ def cli():
 
 @cli.command()
 @click.option("--name", default="outpost", help="Droplet name")
-@click.option("--region", default="nyc3", help="Region slug (e.g. nyc3, sfo3)")
+@click.option("--region", default="fra1", help="Region slug (e.g. nyc3, sfo3)")
 @click.option("--size", default="s-1vcpu-1gb", help="Droplet size")
 def up(name, region, size):
     """Spin up a droplet from the latest snapshot."""

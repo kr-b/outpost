@@ -10,7 +10,6 @@ Spin up droplets from your snapshots, run them when needed, and spin them down t
 * **Spin up droplets** from the latest Outpost snapshot
 * **Spin down droplets** with automatic snapshot backup
 * **List status** of running droplets and available snapshots
-* **SSH** into droplets quickly from the CLI
 * **Clear old snapshots** to keep your account tidy
 * Filters only Outpost-created snapshots, avoiding random snapshots
 
@@ -31,10 +30,18 @@ cd outpost
 pip install -e .
 ```
 
-3. Set your DigitalOcean API token:
+3. Set your DigitalOcean API token and SSH key fingerprints:
 
 ```bash
 export DO_TOKEN="your_digitalocean_api_token"
+export DO_SSH_KEYS="comma,separated,ssh,key,fingerprints"
+```
+
+Or add them to a `.env` file in the project root:
+
+```
+DO_TOKEN=your_digitalocean_api_token
+DO_SSH_KEYS=comma,separated,ssh,key,fingerprints
 ```
 
 ---
@@ -44,8 +51,12 @@ export DO_TOKEN="your_digitalocean_api_token"
 ### Spin up a droplet
 
 ```bash
-outpost up --name lab --region nyc3 --size s-1vcpu-1gb
+outpost up --name lab --region fra1 --size s-1vcpu-1gb
 ```
+
+- `--name` (default: `outpost`)
+- `--region` (default: `fra1`)
+- `--size` (default: `s-1vcpu-1gb`)
 
 ### Spin down a droplet (creates snapshot first)
 
@@ -61,12 +72,6 @@ outpost status
 
 Shows running droplets and available Outpost snapshots.
 
-### SSH into a droplet
-
-```bash
-outpost ssh --name lab
-```
-
 ### Clear old snapshots
 
 ```bash
@@ -79,11 +84,19 @@ Deletes old Outpost snapshots, keeping only the most recent N (default 1).
 
 ## Configuration
 
-Outpost reads your DigitalOcean API token from the `DO_TOKEN` environment variable.
+Outpost reads your DigitalOcean API token from the `DO_TOKEN` environment variable and SSH key fingerprints from `DO_SSH_KEYS`.
 
 Optional CLI parameters:
 
 * `--name` — droplet name (default: `outpost`)
-* `--region` — droplet region (default: `nyc3`)
+* `--region` — droplet region (default: `fra1`)
 * `--size` — droplet size (default: `s-1vcpu-1gb`)
-* `--keep` — number of snapshots to keep when clearing
+* `--keep` — number of snapshots to keep when clearing (default: `1`)
+
+---
+
+## Notes
+
+- Outpost uses the latest snapshot for droplet creation.
+- Droplet destruction automatically creates a backup snapshot.
+- Only snapshots with names starting with `outpost` are managed by the `clear
