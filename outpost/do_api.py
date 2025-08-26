@@ -7,8 +7,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+ssh_keys_env = os.getenv("DO_SSH_KEYS", "")
+DEFAULT_SSH_KEYS = [k.strip() for k in ssh_keys_env.split(",") if k.strip()]
+
 TOKEN = os.getenv("DO_TOKEN")
 client = Client(token=TOKEN)
+
 
 def create_droplet(name, region, size):
     """Create droplet from most recent snapshot and return IP."""
@@ -23,6 +27,7 @@ def create_droplet(name, region, size):
         "region": region,
         "size": size,
         "image": snapshot_id,
+        "ssh_keys": DEFAULT_SSH_KEYS,
     })
 
     droplet_id = droplet["droplet"]["id"]
